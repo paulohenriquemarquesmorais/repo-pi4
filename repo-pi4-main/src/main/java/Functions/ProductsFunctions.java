@@ -1,9 +1,10 @@
 package Functions;
 
 import model.Product;
-import model.User;
 import service.ProductService;
 import util.ProductValidator;
+
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -70,24 +71,85 @@ public class ProductsFunctions {
                         return;
                     }
 
-                    System.out.println("Alterando produto com ID: " + productId);
-                    System.out.println("\n=== Dados do Produto ===");
-                    System.out.println("ID: " + product.getId());
-                    System.out.println("Produto: " + product.getProduct());
-                    System.out.println("Avaliação: " + product.getAssessment());
-                    System.out.println("Descrição: " + product.getDescription());
-                    System.out.println("Quantidade: " + product.getQtd());
-                    System.out.println("Preço: " + product.getPrice());
-                    System.out.println("Ativo: " + product.isActive());
+                    if (loggedUser.isAdmin()) {
+                        System.out.println("=== Opções de Produto ===");
+                        System.out.println("1. Editar Produto");
+                        System.out.println("2. Imagens do Produto");
+                        // Exibe a opção com base no status do produto
+                        System.out.println("3. " + (product.isActive() ? "Desativar Produto" : "Ativar Produto"));
 
-                    changeProduct(product);
+                        int option = scanner.nextInt();
+                        scanner.nextLine(); // Limpa o buffer de entrada
+
+                        switch (option) {
+                            case 1:
+                                System.out.println("Alterando produto com ID: " + productId);
+                                System.out.println("\n=== Dados do Produto ===");
+                                System.out.println("ID: " + product.getId());
+                                System.out.println("Produto: " + product.getProduct());
+                                System.out.println("Avaliação: " + product.getAssessment());
+                                System.out.println("Descrição: " + product.getDescription());
+                                System.out.println("Quantidade: " + product.getQtd());
+
+                                changeProduct(product);
+                                break;
+
+                            case 2:
+                                System.out.println("Ainda será feito");
+                                break;
+
+                            case 3:
+                                // Exibindo a opção correta de ativação ou desativação
+                                System.out.println((product.isActive() ? "Desativando produto com ID: " : "Ativando produto com ID: ") + productId);
+                                System.out.println("\n=== Dados do Produto ===");
+                                System.out.println("ID: " + product.getId());
+                                System.out.println("Produto: " + product.getProduct());
+                                System.out.println("Avaliação: " + product.getAssessment());
+                                System.out.println("Descrição: " + product.getDescription());
+                                System.out.println("Quantidade: " + product.getQtd());
+
+                                // Chama a função de mudança de status
+                                changeStatus(product);
+                                break;
+                        }
+                    }
+                    else {
+                        System.out.println("=== Opções de Produto ===");
+                        System.out.println("1. Editar Quantidade do Produto");
+
+                        try {
+                            int estoqOption = scanner.nextInt();
+                            scanner.nextLine(); // Limpa o buffer de entrada
+
+                            switch (estoqOption) {
+                                case 1:
+                                    System.out.println("Alterando produto com ID: " + productId);
+                                    System.out.println("\n=== Dados do Produto ===");
+                                    System.out.println("ID: " + product.getId());
+                                    System.out.println("Produto: " + product.getProduct());
+                                    System.out.println("Avaliação: " + product.getAssessment());
+                                    System.out.println("Descrição: " + product.getDescription());
+                                    System.out.println("Quantidade: " + product.getQtd());
+
+                                    changeProduct(product);
+                                    break;
+                                default:
+                                    System.out.println("Opção inválida!");
+                            }
+                        } catch (InputMismatchException e) {
+                            System.out.println("Opção inválida! Digite um número válido.");
+                            scanner.nextLine(); // Limpa o buffer para evitar loop infinito
+                            listProducts();
+                        }
+                    }
+
 
                 } catch (NumberFormatException e) {
                     System.out.println("Opção inválida! Digite '0', 'i' ou um número válido.");
+                    listProducts();
                 }
         }
     }
-
 
     public static void registerProduct() {
         Product newProduct = new Product();
@@ -267,16 +329,6 @@ public class ProductsFunctions {
                 }
             }
 
-            // Alterar o status (opção contrária)
-            System.out.println("Status atual: " + (product.isActive() ? "Ativo" : "Inativo"));
-            String statusMessage = product.isActive() ? "Desativar Produto" : "Ativar Produto";
-            System.out.print(statusMessage + "? (Y/N): ");
-            String statusInput = scanner.nextLine().trim();
-
-            if (statusInput.equalsIgnoreCase("Y")) {
-                product.setActive(!product.isActive());
-            }
-
             // Salvar as alterações
             System.out.println("Deseja salvar as alterações? (Y/N): ");
             String saveInput = scanner.nextLine().trim();
@@ -324,5 +376,39 @@ public class ProductsFunctions {
             }
         }
     }
-}
 
+    public static void changeStatus(Product product) {
+        String statusMessage = product.isActive() ? "Desativar Produto" : "Ativar Produto";
+        String statusInput = "";
+
+        while (true) {
+            System.out.print(statusMessage + "? (Y/N): ");
+            statusInput = scanner.nextLine().trim();
+
+            if (statusInput.equalsIgnoreCase("Y")) {
+                // Alterando o status
+                product.setActive(!product.isActive());  // Alterna o status do produto
+
+                // Chama a função de atualização de status
+                boolean isUpdated = productService.updateProductStatus(product); // Atualiza o status no banco ou sistema
+
+                if (isUpdated) {
+                    System.out.println("Status do produto alterado com sucesso!");
+                } else {
+                    System.out.println("Erro ao atualizar o status do produto.");
+                }
+                break;
+            } else if (statusInput.equalsIgnoreCase("N")) {
+                System.out.println("Nenhuma alteração realizada.");
+                break;
+            } else {
+                System.out.println("Entrada inválida. Digite 'Y' para confirmar ou 'N' para cancelar.");
+            }
+        }
+
+        // Agora chamamos a lista de produtos novamente, já com o status atualizado
+        // Recarrega a lista de produtos
+        System.out.println("\nAção concluída. Retornando ao menu do produto.");
+        listProducts();  // Volta para o menu de lista de produtos após a mudança
+    }
+}
