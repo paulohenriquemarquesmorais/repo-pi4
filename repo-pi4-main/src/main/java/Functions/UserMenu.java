@@ -1,6 +1,8 @@
 package Functions;
 
 import model.User;
+
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class UserMenu {
@@ -12,19 +14,25 @@ public class UserMenu {
         System.out.println("2. Sair");
         System.out.print("Escolha uma opção: ");
 
-        int option = scanner.nextInt();
-        scanner.nextLine(); // Limpar buffer
+        try {
+            int option = scanner.nextInt();
+            scanner.nextLine(); // Limpar buffer
 
-        switch (option) {
-            case 1:
-                UsersFunctions.login(); // Chamada direta da classe UsersFunctions
-                break;
-            case 2:
-                System.out.println("Encerrando o sistema...");
-                System.exit(0);
-                break;
-            default:
-                System.out.println("Opção inválida!");
+            switch (option) {
+                case 1:
+                    UsersFunctions.login(); // Chamada direta da classe UsersFunctions
+                    break;
+                case 2:
+                    System.out.println("Encerrando o sistema...");
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Opção inválida!");
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Opção inválida! Digite um número válido.");
+            scanner.nextLine(); // Limpar buffer para evitar loop infinito
+            showLoginMenu();
         }
     }
 
@@ -54,36 +62,41 @@ public class UserMenu {
             System.out.println("8. Listar Produtos");
             System.out.print("Escolha uma opção: ");
 
-            int option = scanner.nextInt();
-            scanner.nextLine(); // Limpar buffer
+            try {
+                int option = scanner.nextInt();
+                scanner.nextLine(); // Limpar buffer
 
-            switch (option) {
-                case 1:
-                    UsersFunctions.listUsers();
-                    break;
-                case 2:
-                    UsersFunctions.registerUser();
-                    break;
-                case 3:
-                    UsersFunctions.deleteUser();
-                    break;
-                case 4:
-                    UsersFunctions.changeUserPassword();
-                    break;
-                case 5:
-                    UsersFunctions.changeUserAccessLevel();
-                    break;
-                case 6:
-                    UsersFunctions.toggleUserStatus();
-                    break;
-                case 7:
-                    System.out.println("Saindo do menu de administrador...");
-                    return; // Sai do loop e volta para a main()
-                case 8:
-                    ProductsFunctions.listProducts();
-                    break;
-                default:
-                    System.out.println("Opção inválida!");
+                switch (option) {
+                    case 1:
+                        UsersFunctions.listUsers();
+                        break;
+                    case 2:
+                        UsersFunctions.registerUser();
+                        break;
+                    case 3:
+                        UsersFunctions.deleteUser();
+                        break;
+                    case 4:
+                        UsersFunctions.changeUserPassword();
+                        break;
+                    case 5:
+                        UsersFunctions.changeUserAccessLevel();
+                        break;
+                    case 6:
+                        UsersFunctions.toggleUserStatus();
+                        break;
+                    case 7:
+                        System.out.println("Saindo do menu de administrador...");
+                        return; // Sai do loop e volta para a main()
+                    case 8:
+                        ProductsFunctions.listProducts();
+                        break;
+                    default:
+                        System.out.println("Opção inválida!");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida! Por favor, insira um número.");
+                scanner.nextLine(); // Limpar buffer em caso de erro de entrada
             }
         }
     }
@@ -95,18 +108,25 @@ public class UserMenu {
         System.out.println("2. Listar produtos");
         System.out.print("Escolha uma opção: ");
 
-        int option = scanner.nextInt();
-        scanner.nextLine(); // Limpar buffer
+        try {
+            int option = scanner.nextInt();
+            scanner.nextLine(); // Limpar buffer
 
-        switch (option) {
-            case 1:
-                UsersFunctions.logout(); // Chamada direta da classe UsersFunctions
-                break;
-            case 2:
-                ProductsFunctions.listProducts();
-                break;
-            default:
-                System.out.println("Opção inválida!");
+            switch (option) {
+                case 1:
+                    UsersFunctions.logout(); // Chamada direta da classe UsersFunctions
+                    break;
+                case 2:
+                    ProductsFunctions.listProducts();
+                    break;
+                default:
+                    System.out.println("Opção inválida!");
+            }
+        }
+        catch (InputMismatchException e) {
+            System.out.println("Entrada inválida! Por favor, insira um número.");
+            scanner.nextLine(); // Limpar buffer em caso de erro de entrada
+            showUserMenu();
         }
     }
 }

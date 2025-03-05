@@ -5,6 +5,7 @@ import util.DatabaseConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import util.PasswordEncryptor;
 
 public class UserDAO {
     private Connection connection;
@@ -46,14 +47,37 @@ public class UserDAO {
             // Criar usuário admin padrão se não existir nenhum usuário
             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM users");
             if (rs.next() && rs.getInt(1) == 0) {
+                String adminPassword = PasswordEncryptor.encryptPassword("admin123");
                 String insertAdmin = "INSERT INTO users (name, username, email, password, admin, active) " +
-                        "VALUES ('Administrador', 'admin', 'admin@sistema.com', 'admin123', 1, 1), " +
-                        "('Estoquista', 'estoq', 'estoq@gmail.com', 'estoq123', 0, 1)";
+                        "VALUES ('Administrador', 'admin', 'admin@sistema.com', '" + adminPassword + "', 1, 1)";
                 stmt.execute(insertAdmin);
                 System.out.println("Usuário administrador padrão criado!");
             }
         } catch (SQLException e) {
             System.out.println("Erro ao criar/atualizar tabela de usuários: " + e.getMessage());
+        }
+    }
+
+    public boolean insert(User user) {
+        // Encriptar a senha antes de armazenar no banco de dados
+        String hashedPassword = PasswordEncryptor.encryptPassword(user.getPassword());
+        user.setPassword(hashedPassword);
+
+        String sql = "INSERT INTO users (name, username, email, password, admin, active) VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, user.getName());
+            pstmt.setString(2, user.getUsername());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setString(4, user.getPassword()); // Senha já encriptada
+            pstmt.setBoolean(5, user.isAdmin());
+            pstmt.setBoolean(6, user.isActive());
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.out.println("Erro ao inserir usuário: " + e.getMessage());
+            return false;
         }
     }
 
@@ -75,15 +99,18 @@ public class UserDAO {
     }
 
     public User findByUsernameAndPassword(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ? AND active = 1";
+        String sql = "SELECT * FROM users WHERE username = ? AND active = 1";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, username);
-            pstmt.setString(2, password);
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                return extractUserFromResultSet(rs);
+                User user = extractUserFromResultSet(rs);
+                // Verificar a senha com o método de verificação do BCrypt
+                if (PasswordEncryptor.checkPassword(password, user.getPassword())) {
+                    return user;
+                }
             }
         } catch (SQLException e) {
             System.out.println("Erro ao autenticar usuário: " + e.getMessage());
@@ -91,6 +118,7 @@ public class UserDAO {
 
         return null;
     }
+
 
     public User findById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
@@ -126,24 +154,6 @@ public class UserDAO {
         return users;
     }
 
-    public boolean insert(User user) {
-        String sql = "INSERT INTO users (name, username, email, password, admin, active) VALUES (?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, user.getName());
-            pstmt.setString(2, user.getUsername());
-            pstmt.setString(3, user.getEmail());
-            pstmt.setString(4, user.getPassword());
-            pstmt.setBoolean(5, user.isAdmin());
-            pstmt.setBoolean(6, user.isActive());
-
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.out.println("Erro ao inserir usuário: " + e.getMessage());
-            return false;
-        }
-    }
 
     public boolean update(User user) {
         String sql = "UPDATE users SET name = ?, username = ?, email = ?, password = ?, admin = ?, active = ? WHERE id = ?";
@@ -166,10 +176,13 @@ public class UserDAO {
     }
 
     public boolean updatePassword(int userId, String newPassword) {
+        // Encriptar a nova senha
+        String hashedPassword = PasswordEncryptor.encryptPassword(newPassword);
+
         String sql = "UPDATE users SET password = ? WHERE id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, newPassword);
+            pstmt.setString(1, hashedPassword);
             pstmt.setInt(2, userId);
 
             int rowsAffected = pstmt.executeUpdate();
