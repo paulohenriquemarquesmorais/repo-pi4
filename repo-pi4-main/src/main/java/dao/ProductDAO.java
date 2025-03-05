@@ -135,7 +135,7 @@ public class ProductDAO {
     }
 
     public boolean update(Product product) {
-        String sql = "UPDATE products SET product = ?, assessment = ?, description = ?, qtd = ?, price = ?, active = ? WHERE id = ?";
+        String sql = "UPDATE products SET product = ?, assessment = ?, description = ?, qtd = ?, price = ? WHERE id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, product.getProduct());         // Produto
@@ -143,8 +143,7 @@ public class ProductDAO {
             pstmt.setString(3, product.getDescription());     // Descrição
             pstmt.setInt(4, product.getQtd());                // Quantidade
             pstmt.setDouble(5, product.getPrice());           // Preço
-            pstmt.setBoolean(6, product.isActive());          // Status
-            pstmt.setInt(7, product.getId());                 // ID do produto (para identificar qual produto será atualizado)
+            pstmt.setInt(6, product.getId());                 // ID do produto (para identificar qual produto será atualizado)
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0; // Retorna true se a atualização foi bem-sucedida
@@ -153,4 +152,21 @@ public class ProductDAO {
             return false;
         }
     }
+
+    public boolean updateStatus(Product product) {
+        String sql = "UPDATE products SET active = ? WHERE id = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            // Passa 1 para Ativo e 0 para Inativo
+            pstmt.setInt(1, product.isActive() ? 1 : 0);  // Atualizando com valores 1 ou 0
+            pstmt.setInt(2, product.getId());  // ID do produto (para identificar qual produto será atualizado)
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0; // Retorna true se a atualização foi bem-sucedida
+        } catch (SQLException e) {
+            System.out.println("Erro ao atualizar produto: " + e.getMessage());
+            return false;
+        }
+    }
+
 }
