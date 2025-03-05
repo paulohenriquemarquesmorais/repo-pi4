@@ -47,9 +47,39 @@ public class ProductService {
         existingProduct.setDescription(updatedProduct.getDescription());
         existingProduct.setQtd(updatedProduct.getQtd());
         existingProduct.setPrice(updatedProduct.getPrice());
-        existingProduct.setActive(updatedProduct.isActive());
 
         // Salva a atualização no banco de dados
         return productDAO.update(existingProduct);
     }
+
+    public boolean updateProductStatus(Product updatedProductStatus) {
+        Product existingProduct = productDAO.findById(updatedProductStatus.getId());
+
+        // Se o produto não for encontrado
+        if (existingProduct == null) {
+            System.out.println("Produto não encontrado: ID " + updatedProductStatus.getId());
+            return false; // Retorna false se não encontrar o produto
+        }
+
+        // Verificando o status antes da atualização
+        System.out.println("Status atual antes da atualização: " + (existingProduct.isActive() ? "Ativo" : "Inativo"));
+
+        // Atualiza o status do produto
+        existingProduct.setActive(updatedProductStatus.isActive());
+
+        // Verificando o novo status
+        System.out.println("Novo status após alteração: " + (existingProduct.isActive() ? "Ativo" : "Inativo"));
+
+        // Salva a atualização no banco de dados
+        boolean isUpdated = productDAO.updateStatus(existingProduct);
+        if (isUpdated) {
+            System.out.println("Produto atualizado com sucesso no banco de dados.");
+        } else {
+            System.out.println("Falha ao atualizar o produto no banco de dados.");
+        }
+        return isUpdated;
+    }
 }
+
+
+
