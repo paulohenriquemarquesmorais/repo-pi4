@@ -3,6 +3,8 @@ package Functions;
 import model.Product;
 import service.ProductService;
 import util.ProductValidator;
+import model.ProductImage;
+import service.ProductImageService;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -95,7 +97,8 @@ public class ProductsFunctions {
                                 break;
 
                             case 2:
-                                System.out.println("Ainda será feito");
+                                System.out.println("Gerenciando imagens do produto com ID: " + product.getId());
+                                manageProductImages(product.getId());
                                 break;
 
                             case 3:
@@ -410,5 +413,134 @@ public class ProductsFunctions {
         // Recarrega a lista de produtos
         System.out.println("\nAção concluída. Retornando ao menu do produto.");
         listProducts();  // Volta para o menu de lista de produtos após a mudança
+    }
+    private static ProductImageService productImageService = new ProductImageService();
+
+    public static void manageProductImages(int productId) {
+        Product product = productService.getProduct(productId);
+        if (product == null) {
+            System.out.println("Produto não encontrado!");
+            return;
+        }
+
+        while (true) {
+            System.out.println("\n=== Imagens do Produto: " + product.getProduct() + " ===");
+            System.out.println("1. Listar imagens");
+            System.out.println("2. Adicionar imagem");
+            System.out.println("3. Voltar");
+            System.out.print("Escolha uma opção: ");
+
+            int option = scanner.nextInt();
+            scanner.nextLine(); // Limpar buffer
+
+            switch (option) {
+                case 1:
+                    listProductImages(productId);
+                    break;
+                case 2:
+                    addProductImage(productId);
+                    break;
+                case 3:
+                    return;
+                default:
+                    System.out.println("Opção inválida!");
+            }
+        }
+    }
+
+    public static void listProductImages(int productId) {
+        List<ProductImage> images = productImageService.getProductImages(productId);
+        Product product = productService.getProduct(productId);
+
+        System.out.println("\n=== Listar imagens do Produto " + productId + " ===");
+
+        if (images.isEmpty()) {
+            System.out.println("Este produto não possui imagens cadastradas.");
+        } else {
+            System.out.printf("%-5s| %-20s | %-20s | %-10s |\n", "Id", "Nome Imagem", "diretório Destino", "Principal");
+            System.out.println("--------------------------------------------------------------");
+
+            for (ProductImage image : images) {
+                System.out.printf("%-5d| %-20s | %-20s | %-10s |\n",
+                        image.getId(),
+                        image.getFileName(),
+                        image.getDirectory(),
+                        image.isPrimary() ? "sim" : "não");
+            }
+        }
+
+        System.out.print("\nEntre com o id para remover a imagem, 0 para voltar e i para incluir => ");
+        String input = scanner.nextLine();
+
+        if (input.equalsIgnoreCase("i")) {
+            addProductImage(productId);
+        } else if (input.equals("0")) {
+            return;
+        } else {
+            try {
+                int imageId = Integer.parseInt(input);
+                System.out.print("Deseja remover esta imagem? (S/N): ");
+                String confirm = scanner.nextLine();
+
+                if (confirm.equalsIgnoreCase("S")) {
+                    boolean success = productImageService.deleteProductImage(imageId);
+                    if (success) {
+                        System.out.println("Imagem removida com sucesso!");
+                    } else {
+                        System.out.println("Erro ao remover imagem.");
+                    }
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("ID inválido!");
+            }
+        }
+    }
+
+    public static void addProductImage(int productId) {
+        System.out.println("\n=== Incluir Imagem ===");
+
+        System.out.print("Nome arquivo => ");
+        String fileName = scanner.nextLine();
+
+        System.out.print("Diretório Origem Imagem => ");
+        String sourceDirectory = scanner.nextLine();
+
+        System.out.print("Principal (S/N) => ");
+        boolean isPrimary = scanner.nextLine().equalsIgnoreCase("S");
+
+        System.out.println("-----------------------------------------------");
+        System.out.println("Opções");
+        System.out.println("1) Salvar e incluir +1 imagem de produto");
+        System.out.println("2) Salvar e finalizar");
+        System.out.println("3) Não salvar e finalizar");
+        System.out.print("Entre com a opção (1,2,3) => ");
+
+        int option = scanner.nextInt();
+        scanner.nextLine(); // Limpar buffer
+
+        switch (option) {
+            case 1:
+                boolean success = productImageService.addProductImage(fileName, sourceDirectory, isPrimary, productId);
+                if (success) {
+                    System.out.println("Imagem adicionada com sucesso!");
+                    addProductImage(productId); // Recursivamente chama para adicionar outra imagem
+                } else {
+                    System.out.println("Erro ao adicionar imagem!");
+                }
+                break;
+            case 2:
+                success = productImageService.addProductImage(fileName, sourceDirectory, isPrimary, productId);
+                if (success) {
+                    System.out.println("Imagem adicionada com sucesso!");
+                } else {
+                    System.out.println("Erro ao adicionar imagem!");
+                }
+                break;
+            case 3:
+                System.out.println("Operação cancelada.");
+                break;
+            default:
+                System.out.println("Opção inválida!");
+        }
     }
 }
