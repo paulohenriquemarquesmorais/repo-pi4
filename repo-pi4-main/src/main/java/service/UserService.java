@@ -16,9 +16,11 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    public User authenticate(String username, String password) {
-        return userDAO.findByUsernameAndPassword(username, password);
+    public User authenticate(String email, String password) {
+        return userDAO.findByEmailAndPassword(email, password);
     }
+
+
 
     public List<User> getAllUsers() {
         return userDAO.findAll();
@@ -30,7 +32,7 @@ public class UserService {
 
     public boolean registerUser(User user) {
         // Verificar se username ou email já existem
-        User existingUser = userDAO.findByUsername(user.getUsername());
+        User existingUser = userDAO.findByEmail(user.getUsername());
         if (existingUser != null) {
             return false;
         }
@@ -42,6 +44,10 @@ public class UserService {
         return userDAO.delete(userId);
     }
 
+    public User getUserById(int id) {
+        return userDAO.findById(id);
+    }
+
     public boolean changeUserPassword(int userId, String newPassword) {
         return userDAO.updatePassword(userId, newPassword);
     }
@@ -49,6 +55,7 @@ public class UserService {
     public boolean changeUserAccessLevel(int userId, boolean isAdmin) {
         return userDAO.updateAccessLevel(userId, isAdmin);
     }
+
 
     public boolean toggleUserActiveStatus(int userId) {
         User user = userDAO.findById(userId);

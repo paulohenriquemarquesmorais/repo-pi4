@@ -22,7 +22,6 @@ public class UserDAO {
     }
 
     private void createTableIfNotExists() {
-        // Modificar a criação da tabela para incluir o campo active
         String sql = "CREATE TABLE IF NOT EXISTS users (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "name TEXT NOT NULL, " +
@@ -36,20 +35,18 @@ public class UserDAO {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(sql);
 
-            // Verificar se a coluna 'active' já existe
             try {
                 stmt.execute("SELECT active FROM users LIMIT 1");
             } catch (SQLException e) {
-                // A coluna não existe, adicionar a coluna
                 stmt.execute("ALTER TABLE users ADD COLUMN active BOOLEAN NOT NULL DEFAULT 1");
             }
 
-            // Criar usuário admin padrão se não existir nenhum usuário
             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM users");
             if (rs.next() && rs.getInt(1) == 0) {
                 String adminPassword = PasswordEncryptor.encryptPassword("admin123");
-                String insertAdmin = "INSERT INTO users (name, username, email, password, admin, active) " +
-                        "VALUES ('Administrador', 'admin', 'admin@sistema.com', '" + adminPassword + "', 1, 1)";
+                String insertAdmin = "INSERT INTO users (name, username, email, password, cpf, admin, active) " +
+                        "VALUES ('Administrador', 'admin', 'admin@sistema.com', '" + adminPassword + "', '000.000.000-00', 1, 1)";
+
                 stmt.execute(insertAdmin);
                 System.out.println("Usuário administrador padrão criado!");
             }
@@ -59,7 +56,6 @@ public class UserDAO {
     }
 
     public boolean insert(User user) {
-        // Encriptar a senha antes de armazenar no banco de dados
         String hashedPassword = PasswordEncryptor.encryptPassword(user.getPassword());
         user.setPassword(hashedPassword);
 
@@ -69,7 +65,7 @@ public class UserDAO {
             pstmt.setString(1, user.getName());
             pstmt.setString(2, user.getUsername());
             pstmt.setString(3, user.getEmail());
-            pstmt.setString(4, user.getPassword()); // Senha já encriptada
+            pstmt.setString(4, user.getPassword());
             pstmt.setBoolean(5, user.isAdmin());
             pstmt.setBoolean(6, user.isActive());
 
@@ -80,34 +76,33 @@ public class UserDAO {
             return false;
         }
     }
+    public boolean update(User user) {
+        String sql = "UPDATE users SET name = ?, cpf = ?, group_name = ? WHERE id = ?";
 
-    public User findByUsername(String username) {
-        String sql = "SELECT * FROM users WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, user.getName());
+            stmt.setString(2, user.getCpf());
+            stmt.setString(3, user.getGroup());
+            stmt.setInt(4, user.getId());
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
 
-            if (rs.next()) {
-                return extractUserFromResultSet(rs);
-            }
         } catch (SQLException e) {
-            System.out.println("Erro ao buscar usuário por username: " + e.getMessage());
+            System.out.println("Erro ao atualizar usuário: " + e.getMessage());
+            return false;
         }
-
-        return null;
     }
 
-    public User findByUsernameAndPassword(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND active = 1";
+    public User findByEmailAndPassword(String email, String password) {
+        String sql = "SELECT * FROM users WHERE email = ? AND active = 1";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, username);
+            pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
                 User user = extractUserFromResultSet(rs);
-                // Verificar a senha com o método de verificação do BCrypt
                 if (PasswordEncryptor.checkPassword(password, user.getPassword())) {
                     return user;
                 }
@@ -118,7 +113,6 @@ public class UserDAO {
 
         return null;
     }
-
 
     public User findById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
@@ -153,30 +147,28 @@ public class UserDAO {
 
         return users;
     }
-
-
-    public boolean update(User user) {
-        String sql = "UPDATE users SET name = ?, username = ?, email = ?, password = ?, admin = ?, active = ? WHERE id = ?";
-
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, user.getName());
-            pstmt.setString(2, user.getUsername());
-            pstmt.setString(3, user.getEmail());
-            pstmt.setString(4, user.getPassword());
-            pstmt.setBoolean(5, user.isAdmin());
-            pstmt.setBoolean(6, user.isActive());
-            pstmt.setInt(7, user.getId());
-
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.out.println("Erro ao atualizar usuário: " + e.getMessage());
-            return false;
-        }
-    }
+//
+//    public boolean update(User user) {
+//        String sql = "UPDATE users SET name = ?, username = ?, email = ?, password = ?, admin = ?, active = ? WHERE id = ?";
+//
+//        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+//            pstmt.setString(1, user.getName());
+//            pstmt.setString(2, user.getUsername());
+//            pstmt.setString(3, user.getEmail());
+//            pstmt.setString(4, user.getPassword());
+//            pstmt.setBoolean(5, user.isAdmin());
+//            pstmt.setBoolean(6, user.isActive());
+//            pstmt.setInt(7, user.getId());
+//
+//            int rowsAffected = pstmt.executeUpdate();
+//            return rowsAffected > 0;
+//        } catch (SQLException e) {
+//            System.out.println("Erro ao atualizar usuário: " + e.getMessage());
+//            return false;
+//        }
+//    }
 
     public boolean updatePassword(int userId, String newPassword) {
-        // Encriptar a nova senha
         String hashedPassword = PasswordEncryptor.encryptPassword(newPassword);
 
         String sql = "UPDATE users SET password = ? WHERE id = ?";
@@ -237,6 +229,24 @@ public class UserDAO {
         }
     }
 
+    public User findByEmail(String email) {
+        String sql = "SELECT * FROM users WHERE email = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return extractUserFromResultSet(rs);
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao buscar usuário por email: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+
     private User extractUserFromResultSet(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId(rs.getInt("id"));
@@ -247,6 +257,26 @@ public class UserDAO {
         user.setAdmin(rs.getBoolean("admin"));
         user.setActive(rs.getBoolean("active"));
         return user;
+    }
+
+    public boolean save(User user) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "INSERT INTO users (name, username, email, password, cpf, admin, active) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, user.getName());
+            pstmt.setString(2, user.getUsername());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setString(4, PasswordEncryptor.encryptPassword(user.getPassword()));
+            pstmt.setString(5, user.getCpf());
+            pstmt.setBoolean(6, user.isAdmin());
+            pstmt.setBoolean(7, user.isActive());
+
+            pstmt.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            System.out.println("Erro ao salvar usuário: " + e.getMessage());
+            return false;
+        }
     }
 
 }

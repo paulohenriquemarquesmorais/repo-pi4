@@ -12,12 +12,12 @@ public class UsersFunctions {
     public static User loggedUser = null;
 
     public static void login() {
-        System.out.print("Username: ");
-        String username = scanner.nextLine();
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
         System.out.print("Senha: ");
         String password = scanner.nextLine();
 
-        loggedUser = userService.authenticate(username, password);
+        loggedUser = userService.authenticate(email, password);
 
         if (loggedUser != null) {
             System.out.println("Login realizado com sucesso! Bem-vindo, " + loggedUser.getName());
@@ -35,16 +35,79 @@ public class UsersFunctions {
     public static void listUsers() {
         List<User> users = userService.getAllUsers();
 
-        System.out.println("\n=== Lista de Usuários ===");
+        System.out.println("\n=== Listar Usuário ===\n");
+        System.out.printf("| %-3s | %-20s | %-25s | %-8s | %-15s |\n", "Id", "Nome", "e-mail", "status", "Grupo");
+        System.out.println("|-----|----------------------|---------------------------|----------|-----------------|");
+
         for (User user : users) {
-            System.out.println("ID: " + user.getId() +
-                    " | Nome: " + user.getName() +
-                    " | Username: " + user.getUsername() +
-                    " | Email: " + user.getEmail() +
-                    " | Admin: " + (user.isAdmin() ? "Sim" : "Não") +
-                    " | Status: " + (user.isActive() ? "Ativo" : "Inativo"));
+            System.out.printf("| %-3d | %-20s | %-25s | %-8s | %-15s |\n",
+                    user.getId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.isActive() ? "ativo" : "inativo",
+                    user.isAdmin() ? "Administrador" : "Estoquista"
+            );
         }
+
+        System.out.print("\nEntre com o id para editar/ativar/inativar, 0 para voltar e i para incluir => ");
+        String input = scanner.nextLine();
+
+        if (input.equals("0")) {
+            return;
+        } else if (input.equalsIgnoreCase("i")) {
+            registerUser();
+        } else {
+            try {
+                int userId = Integer.parseInt(input);
+                User selectedUser = userService.getUserById(userId);
+
+                if (selectedUser == null) {
+                    System.out.println("Usuário não encontrado!");
+                    return;
+                }
+
+                System.out.println("\n\t\tOpções de usuário");
+                System.out.println("\nOpção de edição de usuário\n");
+                System.out.println("Id: " + selectedUser.getId());
+                System.out.println("Nome: " + selectedUser.getName());
+                System.out.println("Cpf: xxx.xxx.xxx-xx");
+                System.out.println("E-mail: " + selectedUser.getEmail());
+                System.out.println("Status: " + (selectedUser.isActive() ? "ativo" : "inativo"));
+                System.out.println("Grupo: " + (selectedUser.isAdmin() ? "Administrador" : "Estoquista"));
+                System.out.println("--------------------------------------------------");
+                System.out.println("Opções");
+                System.out.println("1) Alterar usuário");
+                System.out.println("2) Alterar senha");
+                System.out.println("3) Ativar/Desativar");
+                System.out.println("4) Voltar Listar Usuário");
+                System.out.print("\nEntre com a opção (1,2,3,4) => ");
+
+                String action = scanner.nextLine();
+                switch (action) {
+                    case "1":
+                        registerUser();
+                        break;
+                    case "2":
+                        changeUserPassword();
+                        break;
+                    case "3":
+                        toggleUserStatus();
+                        break;
+                    case "4":
+                        listUsers();
+                        break;
+                    default:
+                        System.out.println("Opção inválida!");
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("ID inválido!");
+            }
+        }
+
+
     }
+
 
     public static void registerUser() {
         User newUser = new User();
@@ -98,41 +161,6 @@ public class UsersFunctions {
         }
     }
 
-    public static void deleteUser() {
-        System.out.print("Digite o ID do usuário a ser excluído: ");
-        int userId = scanner.nextInt();
-        scanner.nextLine(); // Limpar buffer
-
-        // Verificar se o usuário existe
-        User user = userService.getUser(userId);
-        if (user == null) {
-            System.out.println("Usuário não encontrado!");
-            return;
-        }
-
-        // Exibir dados do usuário
-        System.out.println("\n=== Dados do Usuário a ser Excluído ===");
-        System.out.println("ID: " + user.getId());
-        System.out.println("Nome: " + user.getName());
-        System.out.println("Username: " + user.getUsername());
-        System.out.println("Email: " + user.getEmail());
-
-        System.out.print("Confirma a exclusão deste usuário? (S/N): ");
-        String confirm = scanner.nextLine();
-
-        if (confirm.equalsIgnoreCase("S")) {
-            boolean success = userService.deleteUser(userId);
-
-            if (success) {
-                System.out.println("Usuário excluído com sucesso!");
-            } else {
-                System.out.println("Erro ao excluir usuário. ID não encontrado.");
-            }
-        } else {
-            System.out.println("Exclusão cancelada.");
-        }
-    }
-
     public static void changeUserPassword() {
         System.out.print("Digite o ID do usuário: ");
         int userId = scanner.nextInt();
@@ -169,43 +197,7 @@ public class UsersFunctions {
         }
     }
 
-    public static void changeUserAccessLevel() {
-        System.out.print("Digite o ID do usuário: ");
-        int userId = scanner.nextInt();
-        scanner.nextLine(); // Limpar buffer
 
-        // Verificar se o usuário existe
-        User user = userService.getUser(userId);
-        if (user == null) {
-            System.out.println("Usuário não encontrado!");
-            return;
-        }
-
-        // Exibir dados do usuário
-        System.out.println("\n=== Dados do Usuário ===");
-        System.out.println("ID: " + user.getId());
-        System.out.println("Nome: " + user.getName());
-        System.out.println("Username: " + user.getUsername());
-        System.out.println("Status atual de administrador: " + (user.isAdmin() ? "SIM" : "NÃO"));
-
-        System.out.print("Tornar administrador (S/N): ");
-        String isAdmin = scanner.nextLine();
-        boolean adminStatus = isAdmin.equalsIgnoreCase("S");
-
-        // Se o status atual já for o desejado
-        if (user.isAdmin() == adminStatus) {
-            System.out.println("O usuário já possui este nível de acesso!");
-            return;
-        }
-
-        boolean success = userService.changeUserAccessLevel(userId, adminStatus);
-
-        if (success) {
-            System.out.println("Nível de acesso alterado com sucesso!");
-        } else {
-            System.out.println("Erro ao alterar nível de acesso. ID não encontrado.");
-        }
-    }
 
     public static void toggleUserStatus() {
         System.out.print("Digite o ID do usuário: ");
@@ -246,14 +238,6 @@ public class UsersFunctions {
         }
     }
 
-    public static void viewMyData() {
-        System.out.println("\n=== Meus Dados ===");
-        System.out.println("ID: " + loggedUser.getId());
-        System.out.println("Nome: " + loggedUser.getName());
-        System.out.println("Username: " + loggedUser.getUsername());
-        System.out.println("Email: " + loggedUser.getEmail());
-        System.out.println("Administrador: " + (loggedUser.isAdmin() ? "Sim" : "Não"));
-    }
 
     public static void changeMyPassword() {
         System.out.print("Digite sua senha atual: ");

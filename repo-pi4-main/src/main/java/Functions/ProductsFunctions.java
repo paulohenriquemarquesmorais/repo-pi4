@@ -18,25 +18,23 @@ public class ProductsFunctions {
     private static ProductService productService = new ProductService();
 
     public static void listProducts() {
-        List<Product> products = productService.getAllProducts();
+        List<Product> products = productService.getAllProducts(); // <-- esta linha é essencial
 
-        System.out.println("\n=== Lista de Produtos ===");
-        if (products.isEmpty()) {
-            System.out.println("Nenhum produto encontrado.");
-        } else {
-            for (Product product : products) {
-                System.out.println("ID: " + product.getId() +
-                        " | Produto: " + product.getProduct() +
-                        " | Avaliação: " + product.getAssessment() +
-                        " | Descrição: " + product.getDescription() +
-                        " | Quantidade: " + product.getQtd() +
-                        " | Preço: " + product.getPrice() +
-                        " | Status: " + (product.isActive() ? "Ativo" : "Inativo"));
-            }
+        System.out.println("\n=== Listar Produtos ===\n");
+        System.out.printf("| %-3s | %-20s | %-12s | %-10s | %-8s |\n", "Id", "Nome", "Quantidade", "Valor", "Status");
+        System.out.println("|-----|----------------------|--------------|------------|----------|");
+
+        for (Product product : products) {
+            System.out.printf("| %-3d | %-20s | %-12d | %-10.2f | %-8s |\n",
+                    product.getId(),
+                    product.getProduct(),
+                    product.getQtd(),
+                    product.getPrice(),
+                    product.isActive() ? "ativo" : "inativo"
+            );
         }
 
-        // Opções para o usuário
-        System.out.println("0. Voltar ao menu inicial");
+        System.out.print("\nEntre com o id para editar/ativar/inativar, 0 para voltar e i para incluir => ");
 
         // Verifica se o usuário é admin antes de exibir a opção de incluir produto
         if (loggedUser.isAdmin()) {
@@ -75,10 +73,19 @@ public class ProductsFunctions {
 
                     if (loggedUser.isAdmin()) {
                         System.out.println("=== Opções de Produto ===");
-                        System.out.println("1. Editar Produto");
-                        System.out.println("2. Imagens do Produto");
-                        // Exibe a opção com base no status do produto
-                        System.out.println("3. " + (product.isActive() ? "Desativar Produto" : "Ativar Produto"));
+                        System.out.println("Id: " + product.getId());
+                        System.out.println("Nome Produto: " + product.getProduct());
+                        System.out.printf("Preço: %.2f\n", product.getPrice());
+                        System.out.println("Qtd. Estoque: " + product.getQtd());
+                        System.out.println("Avaliação : " + product.getAssessment());
+                        System.out.println("Status => " + (product.isActive() ? "ativo" : "inativo"));
+                        System.out.println("--------------------------------------------------");
+                        System.out.println("Opções");
+                        System.out.println("1) Alterar produto");
+                        System.out.println("2) Listar/alterar imagens do produto");
+                        System.out.println("3) Ativar/Desativar produto");
+                        System.out.println("4) Voltar Listar produto");
+                        System.out.print("\nEntre com a opção (1,2,3,4) => ");
 
                         int option = scanner.nextInt();
                         scanner.nextLine(); // Limpa o buffer de entrada

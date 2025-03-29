@@ -2,6 +2,7 @@ package service;
 
 import dao.ProductImageDAO;
 import model.ProductImage;
+import java.io.IOException;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -23,7 +24,19 @@ public class ProductImageService {
     }
 
     public boolean addProductImage(String fileName, String sourceDirectory, boolean isPrimary, int productId) {
-        try {
+        
+try {
+    Path origem = Paths.get(sourceDirectory);
+    Path destino = Paths.get("src", "main", "java", "resources", "imagens", String.valueOf(productId), fileName);
+    System.out.println("Caminho da origem: " + origem.toAbsolutePath());
+    System.out.println("Caminho do destino: " + destino.toAbsolutePath());
+    Files.createDirectories(destino.getParent());
+    Files.copy(origem, destino, StandardCopyOption.REPLACE_EXISTING);
+} catch (IOException e) {
+    System.out.println("Erro ao copiar a imagem: " + e.getMessage());
+}
+
+try {
             // Criar diretório de destino se não existir
             String destDirectory = BASE_DIRECTORY + productId + "/";
             File directory = new File(destDirectory);

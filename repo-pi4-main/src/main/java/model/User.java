@@ -6,22 +6,10 @@ public class User {
     private String username;
     private String email;
     private String password;
-    private boolean admin;
-    private boolean active; // Campo para controlar se o usuário está ativo
-
-    public User() {
-        this.active = true; // Por padrão, novos usuários são ativos
-    }
-
-    public User(int id, String name, String username, String email, String password, boolean admin, boolean active) {
-        this.id = id;
-        this.name = name;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.admin = admin;
-        this.active = active;
-    }
+    private String cpf;
+    private boolean isAdmin;
+    private boolean isActive;
+    private String group;
 
     public int getId() {
         return id;
@@ -63,20 +51,35 @@ public class User {
         this.password = password;
     }
 
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+
     public boolean isAdmin() {
-        return admin;
+        return isAdmin;
     }
 
     public void setAdmin(boolean admin) {
-        this.admin = admin;
+        isAdmin = admin;
     }
 
     public boolean isActive() {
-        return active;
+        return isActive;
     }
 
     public void setActive(boolean active) {
-        this.active = active;
+        isActive = active;
     }
 
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
 }
