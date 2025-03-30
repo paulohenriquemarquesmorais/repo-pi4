@@ -85,7 +85,7 @@ public class UsersFunctions {
                 String action = scanner.nextLine();
                 switch (action) {
                     case "1":
-                        registerUser();
+                        editUser();
                         break;
                     case "2":
                         changeUserPassword();
@@ -107,6 +107,55 @@ public class UsersFunctions {
 
 
     }
+
+    public static void editUser() {
+//        listUsers(); // Mostra os usuários
+
+        System.out.print("\nDigite o ID do usuário que deseja editar: ");
+        int userId = scanner.nextInt();
+        scanner.nextLine(); // Limpa o buffer
+
+        User user = userService.getUserById(userId);
+
+        if (user == null) {
+            System.out.println("Usuário não encontrado.");
+            return;
+        }
+
+        System.out.println("\n=== Editar Usuário ===");
+        System.out.println("Id: " + user.getId());
+        System.out.println("Nome atual: " + user.getName());
+        System.out.println("Cpf atual: " + user.getCpf());
+        System.out.println("E-mail atual: " + user.getEmail());
+
+        System.out.print("\nNovo nome => ");
+        String nome = scanner.nextLine();
+
+        System.out.print("Novo CPF => ");
+        String cpf = scanner.nextLine();
+
+        System.out.print("Novo e-mail => ");
+        String email = scanner.nextLine();
+
+        System.out.print("Salvar alteração (Y/N) => ");
+        String confirmacao = scanner.nextLine();
+
+        if (confirmacao.equalsIgnoreCase("y")) {
+            user.setName(nome);
+            user.setCpf(cpf);
+            user.setEmail(email);
+
+            boolean atualizado = userService.updateUser(user);
+            if (atualizado) {
+                System.out.println("Usuário atualizado com sucesso!");
+            } else {
+                System.out.println("Erro ao atualizar usuário.");
+            }
+        } else {
+            System.out.println("Alteração cancelada.");
+        }
+    }
+
 
 
     public static void registerUser() {

@@ -55,6 +55,10 @@ public class UserService {
     public boolean changeUserAccessLevel(int userId, boolean isAdmin) {
         return userDAO.updateAccessLevel(userId, isAdmin);
     }
+    public boolean updateUser(User user) {
+        UserDAO userDAO = new UserDAO();
+        return userDAO.update(user);
+    }
 
 
     public boolean toggleUserActiveStatus(int userId) {

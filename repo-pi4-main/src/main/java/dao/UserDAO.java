@@ -76,23 +76,7 @@ public class UserDAO {
             return false;
         }
     }
-    public boolean update(User user) {
-        String sql = "UPDATE users SET name = ?, cpf = ?, group_name = ? WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, user.getName());
-            stmt.setString(2, user.getCpf());
-            stmt.setString(3, user.getGroup());
-            stmt.setInt(4, user.getId());
-
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-
-        } catch (SQLException e) {
-            System.out.println("Erro ao atualizar usuário: " + e.getMessage());
-            return false;
-        }
-    }
 
     public User findByEmailAndPassword(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ? AND active = 1";
@@ -147,26 +131,26 @@ public class UserDAO {
 
         return users;
     }
-//
-//    public boolean update(User user) {
-//        String sql = "UPDATE users SET name = ?, username = ?, email = ?, password = ?, admin = ?, active = ? WHERE id = ?";
-//
-//        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-//            pstmt.setString(1, user.getName());
-//            pstmt.setString(2, user.getUsername());
-//            pstmt.setString(3, user.getEmail());
-//            pstmt.setString(4, user.getPassword());
-//            pstmt.setBoolean(5, user.isAdmin());
-//            pstmt.setBoolean(6, user.isActive());
-//            pstmt.setInt(7, user.getId());
-//
-//            int rowsAffected = pstmt.executeUpdate();
-//            return rowsAffected > 0;
-//        } catch (SQLException e) {
-//            System.out.println("Erro ao atualizar usuário: " + e.getMessage());
-//            return false;
-//        }
-//    }
+
+    public boolean update(User user) {
+        String sql = "UPDATE users SET name = ?, username = ?, email = ?, password = ?, admin = ?, active = ? WHERE id = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, user.getName());
+            pstmt.setString(2, user.getUsername());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setString(4, user.getPassword());
+            pstmt.setBoolean(5, user.isAdmin());
+            pstmt.setBoolean(6, user.isActive());
+            pstmt.setInt(7, user.getId());
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.out.println("Erro ao atualizar usuário: " + e.getMessage());
+            return false;
+        }
+    }
 
     public boolean updatePassword(int userId, String newPassword) {
         String hashedPassword = PasswordEncryptor.encryptPassword(newPassword);
