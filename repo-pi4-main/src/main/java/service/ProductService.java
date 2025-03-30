@@ -14,7 +14,7 @@ public class ProductService {
 
     // Recupera todos os produtos
     public List<Product> getAllProducts() {
-        return productDAO.findAllProducts();
+        return productDAO.findAll();
     }
 
     // Registra um novo produto
