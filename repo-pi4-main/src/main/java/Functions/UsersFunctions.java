@@ -187,7 +187,7 @@ public class UsersFunctions {
 
         String password;
         do {
-            System.out.print("Senha (mínimo 8 caracteres, letras maiúsculas, minúsculas e números): ");
+            System.out.print("Senha : ");
             password = scanner.nextLine();
             if (!UserValidator.isValidPassword(password)) {
                 System.out.println("Senha inválida!");
@@ -230,7 +230,7 @@ public class UsersFunctions {
 
         String newPassword;
         do {
-            System.out.print("Digite a nova senha (mínimo 8 caracteres, letras maiúsculas, minúsculas e números): ");
+            System.out.print("Digite a nova senha : ");
             newPassword = scanner.nextLine();
             if (!UserValidator.isValidPassword(newPassword)) {
                 System.out.println("Senha inválida!");
@@ -299,7 +299,7 @@ public class UsersFunctions {
 
         String newPassword;
         do {
-            System.out.print("Digite a nova senha (mínimo 8 caracteres, letras maiúsculas, minúsculas e números): ");
+            System.out.print("Digite a nova senha : ");
             newPassword = scanner.nextLine();
             if (!UserValidator.isValidPassword(newPassword)) {
                 System.out.println("Senha inválida!");

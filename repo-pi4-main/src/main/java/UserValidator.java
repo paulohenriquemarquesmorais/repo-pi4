@@ -24,24 +24,6 @@ public class UserValidator {
     }
 
     public static boolean isValidPassword(String password) {
-        if (password == null || password.length() < 8) {
-            return false;
-        }
-
-        boolean hasLower = false;
-        boolean hasUpper = false;
-        boolean hasDigit = false;
-
-        for (char c : password.toCharArray()) {
-            if (Character.isLowerCase(c)) {
-                hasLower = true;
-            } else if (Character.isUpperCase(c)) {
-                hasUpper = true;
-            } else if (Character.isDigit(c)) {
-                hasDigit = true;
-            }
-        }
-
-        return hasLower && hasUpper && hasDigit;
-    }
+        return true;
+}
 }

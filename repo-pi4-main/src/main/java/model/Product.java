@@ -68,4 +68,15 @@ public class Product {
     public void setActive(boolean active) {
         this.active = active;
     }
+
+    private String imagePath;
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
 }

@@ -69,22 +69,30 @@ public class ProductDAO {
         return null;
     }
 
-    public List<Product> findAllProducts() {
-        List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM products " +
-                "ORDER BY ID DESC";
+    public List<Product> findAll() {
+        List<Product> produtos = new ArrayList<>();
 
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection connection = new DatabaseConnection().getConnection()) {
+            String sql = "SELECT * FROM products";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
 
-            while (rs.next()) {
-                products.add(extractProductFromResultSet(rs));
+            while (resultSet.next()) {
+                Product produto = new Product();
+                produto.setId(resultSet.getInt("id"));
+                produto.setProduct(resultSet.getString("product"));
+                produto.setDescription(resultSet.getString("description"));
+                produto.setPrice(resultSet.getDouble("price"));
+//                produto.setImagePath(resultSet.getString("imagePath"));
+                produtos.add(produto);
             }
         } catch (SQLException e) {
-            System.out.println("Erro ao listar todos os produtos: " + e.getMessage());
+            e.printStackTrace();
         }
-        return products;
+
+        return produtos;
     }
+
 
     private Product extractProductFromResultSet(ResultSet rs) throws SQLException {
         Product product = new Product();
